@@ -1,7 +1,356 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8">
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>
+    
+    <style>
+/*      circle.dimple-series-0 {
+        fill: red;
+        opacity: 0.5;
+        stroke: 0.7; 
+      }*/
+      h2{
+        text-align: center;
+      }
+      svg{
+        text-align: center;
+      }
+      circle.dimple-l {
+        fill: green;
+        opacity: 0.5;
+        stroke: 0.7;
+      }
+      circle.dimple-r {
+        fill: red;
+        opacity: 0.5;
+        stroke: 0.7;
+      }
+      circle.dimple-b {
+        fill: blue;
+        opacity: 0.5;
+        stroke: 0.7;
+      }
+      div.button {
+        /*position: fixed;*/
+        top: 5px;
+        left: 50px;
+      }  
+      div {
+        background-color: rgb(251, 201, 127);
+        padding: 3px;
+        margin: 7px;
+        /*left: 200px;*/
+        float: left;
+        /*display: inline;*/
+      }
+      select#stature_list{
+        position:absolute;
+        left:100px;
+        top:100px
+      }
+      label#stature_label{
+        position:absolute;
+        left:100px;
+        top:70px
+      }
+      select#handed_list{
+        position: absolute;
+        left: 200px;
+        top: 100px;
+      }
+      input{
+        position: absolute;
+        left: 300px;
+        top: 100px;
+      }
+      label#check_label{
+        position: absolute;
+        left: 320px;
+        top: 98px;
+      }
+      text.dimple-title{
+        font-size: 20px;
+      }
+      option{
+        font-size: 10px;
+      }
+    </style>
+
+    <script type="text/javascript">
+      function draw(data) {
+          d3.select('body')
+            .append('h2')
+            .text('棒球选手击球率统计')
+      
+      /*
+        D3.js setup code
+      */
+
+          // "use strict";
+          // var margin = 75,
+          //     width = 1400 - margin,
+          //     height = 800 - margin;
+
+          // var svg = d3.select("body")
+          //   .append("svg")
+          //     .attr("width", width + margin)
+          //     .attr("height", height + margin)
+          //   .append('g')
+          //       .attr('class','chart');
+
+          // debugger;
+
+      /*
+        Dimple.js Chart construction code
+      */
+
+
+          //Help function to simplify axis labels display
+          var cleanAxis = function (axis, oneInEvery) {
+              if (axis.shapes.length > 0) {
+                  var del = 0;
+                  if (oneInEvery > 1) {
+                      axis.shapes.selectAll("text").each(function(d) {
+                          d3.select(this).attr("opacity", 1);
+                          if (del % oneInEvery !== 0) {
+                              d3.select(this).attr("opacity", 0);
+                          }
+                          del += 1;
+                      });
+                  }
+              }
+          };
+
+          //Help function to draw chart based on different axis or color options
+          var drawChart = function(axis_x, axis_y, c=null){
+              var chart = new dimple.chart(svg, data);
+              var x = chart.addCategoryAxis("x", axis_x);
+              if(axis_x === 'height'){
+                  x.title = "身高（英寸）";
+              }
+              else{
+                  x.title = "体重（磅）";
+              }              
+              var y = chart.addCategoryAxis("y", axis_y);
+              y.title = "击球率";
+              chart.addSeries(c, dimple.plot.bubble);
+
+              return chart;
+          }
+
+          //Help function to reset circle opacity so that only one of handedness type data displayed
+          var resetCircleOpacity = function(selected_value){
+              d3.selectAll("circle").style("opacity", 0.05);
+              switch(selected_value){
+                  // case "L":
+                  case "左撇子":
+                      d3.selectAll("circle.dimple-l").transition().duration(500).style("opacity", 0.5);
+                      break;
+                  // case "R":
+                  case "右撇子":
+                      d3.selectAll("circle.dimple-r").transition().duration(500).style("opacity", 0.5);
+                      break;
+                  // case "B":
+                  case "双手":
+                      d3.selectAll("circle.dimple-b").transition().duration(500).style("opacity", 0.5);
+                      break;
+                  default:
+                      d3.selectAll("circle.dimple-bubble").transition().duration(500).style("opacity", 0.5);
+              }
+          }
+
+          var svg = dimple.newSvg("body", 800, 800);
+          // "use strict";
+          // var margin = 75,
+          //     width = 1400 - margin,
+          //     height = 900 - margin;
+
+          // var svg = d3.select("body")
+          //   .append("svg")
+          //     .attr("width", width + margin)
+          //     .attr("height", height + margin)
+          //   .append('g')
+          //       .attr('class','chart');
+
+          var myChart = drawChart("height", "avg");
+          // var myChart = new dimple.chart(svg, data);
+          // var x = myChart.addCategoryAxis("x", "height");
+          // x.ticks = 10;
+          // x.overrideMax=80;
+          // var y = myChart.addCategoryAxis("y", "avg");
+          // y.addOrderRule("HR", false);
+          // y.overrideMin = 0;
+          // var z = myChart.addColorAxis("handedness", "#FF0000");
+          // y.ticks = 5;
+          // x.dateParseFormat = "%Y";
+          // x.tickFormat = "%Y";
+          // x.timeInterval = 4;
+          // myChart.addSeries(null, dimple.plot.bubble);
+          // myChart.addSeries(null,dimple.plot.bubble, [x,y,z]);
+          // myChart.addSeries("handedness", dimple.plot.bar);
+          myChart.draw();
+          d3.selectAll('circle').attr('r', 8);
+          cleanAxis(myChart.axes[1], 20);
+          d3.selectAll("circle").style("opacity", 0.5).style("stroke", 0.7);
+
+          //Add drop down list for stature field selection which include "height" and "weight"
+          // stature_type = [{'value': 'height'}, {'value': 'weight'}];
+          stature_type = [{'value': '身高'}, {'value': '体重'}];
+          // var stature_div = d3.select("body").append("div")
+          //                     .attr("id", "stature_div");
+          // var stature_label = d3.select("body").append("label")
+          //                       .attr("id", "stature_label").text("选择X轴类型");
+          var stature_dropdown = d3.select("body").append("select")
+                                  .attr("id", "stature_list");
+          var stature_options = stature_dropdown.selectAll("option")
+                                       .data(stature_type) // eg., data = [ {'value': 10}, {'value': 11}, {'value': 12} ]
+                                       .enter()
+                                       .append("option");
+          stature_options.text(function(d){ return d.value; })
+                 .attr("value", function (d) { return d.value; });
+          stature_dropdown.on("change", statureChanged);
+
+          function statureChanged() {
+              var selectedValue = d3.event.target.value;
+              if(selectedValue === '身高'){
+                  var selection = 'height';
+              }
+              else{
+                  var selection = 'weight';
+              }
+              d3.selectAll("svg > *").remove();
+              if(handed_check.property("checked")){
+                  var avg_chart = drawChart(selection, "avg", "handedness");
+              }
+              else{
+                  var avg_chart = drawChart(selection, "avg");
+              }
+              avg_chart.draw();
+              d3.selectAll('circle').attr('r', 8);
+              cleanAxis(avg_chart.axes[1], 20);
+              // debugger;
+              resetCircleOpacity(handed_dropdown.property("value"));
+
+          }
+
+          //Add drop down list for handedness selection which include "L", "R", "B" and "All"
+          // handed_type = [{'value': 'All'}, {'value': 'L'}, {'value': 'R'}, {'value': 'B'}];
+          handed_type = [{'value': '全部'}, {'value': '左撇子'}, {'value': '右撇子'}, {'value': '双手'}];
+          var handed_dropdown = d3.select("body").append("select")
+                                  .attr("id", "handed_list").attr("disabled", true);
+          var handed_options = handed_dropdown.selectAll("option")
+                                       .data(handed_type) // eg., data = [ {'value': 10}, {'value': 11}, {'value': 12} ]
+                                       .enter()
+                                       .append("option");
+          handed_options.text(function(d){ return d.value; })
+                 .attr("value", function (d) { return d.value; });
+          handed_dropdown.on("change", handedChanged);
+
+          function handedChanged() {
+              var selectedValue = d3.event.target.value;
+              resetCircleOpacity(selectedValue);
+              // d3.selectAll("circle").attr("visibility", "hidden");
+          }
+
+          //Add check box to enable or disable color display for handedness field
+          var handed_check = d3.select("body").append('input').attr('type','checkbox').property("checked", false);
+          // var handed_label = d3.select("body").append('label').attr('id','check_label').text("Enable handed");
+          var handed_label = d3.select("body").append('label').attr('id','check_label').text("显示左右手类型");
+          handed_check.on("change", handedCheckChanged);
+      
+          function handedCheckChanged(chart=myChart){
+              // debugger;
+              if(handed_check.property("checked")){
+                  handed_dropdown.attr("disabled", null);
+                  var color = "handedness";
+              }
+              else{
+                  handed_dropdown.attr("disabled", true);
+                  var color = null;
+                  handed_dropdown.property("value", "All");
+              }
+              var x_value = d3.selectAll("text.dimple-title").text();
+              if(x_value === '身高（英寸）'){
+                  x_field = 'height';
+              }
+              else{
+                  x_field = 'weight';
+              }
+              d3.selectAll("svg > *").remove();
+              var avg_chart = drawChart(x_field, "avg", color);
+              avg_chart.draw();
+              d3.selectAll('circle').attr('r', 8);
+              cleanAxis(avg_chart.axes[1], 20);
+              d3.selectAll("circle").style("opacity", 0.5).style("stroke", 0.7);
+          }
+
+          // handed_dropdown.on("change", handedChanged);
+
+          // var h_button = d3.select('body')
+          //                  .append('div')
+          //                  .attr('class', 'button')
+          //               // .selectAll('div')
+          //               // .data(years)
+          //               // .enter()
+          //               // .append('div')
+          //                  .text("height");
+
+          // h_button.on('click', function(d){
+          //               d3.selectAll("svg > *").remove();
+          //               var h_avg_chart = drawChart("height", "avg");
+          //               h_avg_chart.draw();
+          //               cleanAxis(h_avg_chart.axes[1], 20);
+          //               // d3.select('.button')
+          //               d3.selectAll('div')
+          //                 .transition()
+          //                 .duration(500)
+          //                 .style('color', 'black')
+          //                 .style('background', 'rgb(251,201,127)');
+          //               d3.select(this)
+          //                 .transition()
+          //                 .duration(500)
+          //                 .style('background', 'lightBlue')
+          //                 .style('color', 'white');
+          //               // update(d);
+          //           })
+
+          // var w_button = d3.select('body')
+          //                  .append('div')
+          //                  .attr('class', 'button')
+          //                  .text("weight");
+
+          // w_button.on('click', function(d){
+          //               d3.selectAll("svg > *").remove();
+          //               var w_avg_chart = drawChart("weight", "avg");
+          //               w_avg_chart.draw();
+          //               cleanAxis(w_avg_chart.axes[0],2);
+          //               cleanAxis(w_avg_chart.axes[1], 20);
+          //               // d3.select('.button')
+          //               d3.selectAll('div')
+          //                 .transition()
+          //                 .duration(500)
+          //                 .style('color', 'black')
+          //                 .style('background', 'rgb(251,201,127)');
+          //               d3.select(this)
+          //                 .transition()
+          //                 .duration(500)
+          //                 .style('background', 'lightBlue')
+          //                 .style('color', 'white');
+          //           })
+
+        };
+
+    </script>
+  </head>
 <body>
-<h1>Hello World</h1>
-<p>I'm hosted with GitHub Pages.</p>
+  <script type="text/javascript">
+  /*
+    Use D3 (not dimple.js) to load the TSV file
+    and pass the contents of it to the draw function
+    */
+  d3.csv("baseball_data.csv", draw);
+  </script>
 </body>
 </html>
